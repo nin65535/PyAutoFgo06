@@ -1,0 +1,2 @@
+export { LayoutMain } from "./layoutMain";
+
