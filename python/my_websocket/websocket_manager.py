@@ -47,6 +47,8 @@ class WebsocketManager:
     def get_router(self) -> APIRouter:
         router = APIRouter()
 
-        router.websocket('', self.connect)
+        @router.websocket('')
+        async def websocket_endpoint(websocket: WebSocket):
+            await self.connect(websocket)
 
         return router

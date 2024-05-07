@@ -1,5 +1,6 @@
 import React from "react";
 import { useTest } from "../../hooks/useTest";
+import { WsButton } from "./wsButton";
 
 export const Dashboard: React.FC = () => {
 
@@ -9,5 +10,9 @@ export const Dashboard: React.FC = () => {
 
     return <div>
         this is dashboard
+
+        <div>
+            <WsButton/>
+        </div>
     </div>
 }
