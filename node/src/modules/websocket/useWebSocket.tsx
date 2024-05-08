@@ -1,27 +1,45 @@
 import React from "react"
 import { emitWebSocketEvent } from "./types/webSocketEvent"
+import { atom, useAtomValue } from 'jotai'
+import { PromiseDeferred } from "../promiseDeferred"
 
-
-const wsContext = React.createContext<React.MutableRefObject<WebSocket> | undefined>(undefined)
 const url = 'ws://localhost:8000/ws'
 
 const connect = (): WebSocket => {
-    return new WebSocket(url)
+    try {
+        return new WebSocket(url)
+    } catch (e) {
+        throw new Error('nankahen')
+    }
 }
 
-export const useWebsocket = () => React.useContext(wsContext)!
+const wsAtom = atom<WebSocket>(connect())
+
+export const useWebsocket = () => useAtomValue(wsAtom)
 
 
-export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const refWS = React.useRef(connect())
+export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => <React.Suspense fallback='connecting'>
+    <WebSocketProviderMain>
+        {children}
+    </WebSocketProviderMain>
+</React.Suspense>
+
+
+const WebSocketProviderMain: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+
+    const websocket = useWebsocket()
 
     React.useEffect(() => {
         const onMessage = (ev: MessageEvent<string>) => emitWebSocketEvent(ev.data)
-        refWS.current.addEventListener('message', onMessage)
-        return () => refWS.current.removeEventListener('message', onMessage)
-    }, [refWS])
+        websocket.addEventListener('message', onMessage)
+        return () => websocket.removeEventListener('message', onMessage)
+    }, [websocket])
 
-    return <wsContext.Provider value={refWS}>
-        {children}
-    </wsContext.Provider>
+    if (websocket.readyState != WebSocket.OPEN) {
+        const pd = new PromiseDeferred<void>
+        websocket.onopen = () => pd.resolve()
+        throw pd.promise
+    }
+
+    return <>{children}</>
 }

@@ -51,4 +51,6 @@ class WebsocketManager:
         async def websocket_endpoint(websocket: WebSocket):
             await self.connect(websocket)
 
+        # router.websocket('',websocket_endpoint)
+
         return router

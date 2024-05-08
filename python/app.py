@@ -28,7 +28,7 @@ class App:
             allow_headers=["*"],
         )
 
-        self.fast_api.include_router(get_router())
+        self.fast_api.include_router(get_router(), prefix='/api')
         self.fast_api.include_router(
             self.ws_manager.get_router(), prefix='/ws',)
         self.fast_api.mount(
@@ -43,7 +43,6 @@ class App:
     async def on_request_validation_error(request: Request, exc: RequestValidationError):
         print(exc)
         return JSONResponse(content={}, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
-
 
 
 app = App()
